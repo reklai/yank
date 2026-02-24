@@ -39,9 +39,9 @@ const staticFiles = [
   [resolve(root, "src/entryPoints/toolbarPopup/toolbarPopup.css"), "toolbarPopup/toolbarPopup.css"],
   [resolve(root, "src/entryPoints/optionsPage/optionsPage.html"), "optionsPage/optionsPage.html"],
   [resolve(root, "src/entryPoints/optionsPage/optionsPage.css"), "optionsPage/optionsPage.css"],
-  [resolve(root, "src/icons/icon-48.png"), "icons/icon-48.png"],
-  [resolve(root, "src/icons/icon-96.png"), "icons/icon-96.png"],
-  [resolve(root, "src/icons/icon-128.png"), "icons/icon-128.png"],
+  [resolve(root, "src/icons/checklist.png"), "icons/icon-48.png"],
+  [resolve(root, "src/icons/checklist.png"), "icons/icon-96.png"],
+  [resolve(root, "src/icons/checklist.png"), "icons/icon-128.png"],
 ];
 
 function copyStatic() {
