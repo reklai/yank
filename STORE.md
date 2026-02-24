@@ -6,6 +6,13 @@ This document is a reference for store-facing metadata, product claims, and perm
 
 Yank
 
+## Store Icon
+
+- Upload file: `release/yank-store-icon-128.png`
+- Format: PNG
+- Size: 128x128
+- Color mode: RGB (no alpha channel)
+
 ## Summary (short — AMO/CWS listing)
 
 Keyboard-first clipboard utility: copy page URL, auto-copy selections, JSON transforms, clean code copy, and Fetch/cURL conversion.

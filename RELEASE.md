@@ -44,6 +44,9 @@ npm run build:firefox
 # Chrome artifact (.zip)
 npm run build:chrome
 (cd dist && zip -qr "../release/yank-chrome-v${VERSION}.zip" .)
+
+# Chrome Web Store listing icon (128x128 PNG, RGB)
+cp src/icons/store-icon-128.png release/yank-store-icon-128.png
 ```
 
 ## Optional Source Archive
