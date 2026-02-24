@@ -22,14 +22,14 @@ export const DEFAULT_SETTINGS: YankSettings = {
     rootPathPrefix: "response.data",
   },
   shortcuts: {
-    switchToAutoCopy: "Alt+T",
-    jsonToolingPrettyPrint: "Alt+D",
-    jsonToolingPathCopy: "Alt+Shift+D",
-    jsonToolingMarkdownTable: "Alt+Shift+T",
-    copyPageUrl: "Alt+C",
-    copyCleanCodeBlock: "Alt+Shift+C",
-    copyAsFetch: "Alt+F",
-    copyAsCurl: "Alt+Shift+F",
+    switchToAutoCopy: "Ctrl+Alt+Y",
+    jsonToolingPrettyPrint: "Ctrl+Alt+P",
+    jsonToolingPathCopy: "Ctrl+Alt+O",
+    jsonToolingMarkdownTable: "Ctrl+Alt+L",
+    copyPageUrl: "Ctrl+Alt+U",
+    copyCleanCodeBlock: "Ctrl+Alt+C",
+    copyAsFetch: "Ctrl+Alt+F",
+    copyAsCurl: "Ctrl+Alt+R",
   },
 };
 
