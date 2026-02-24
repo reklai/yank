@@ -6,7 +6,7 @@ Smart clipboard extension inspired by Harpoon Telescope structure.
 
 - Defaults are Off: Auto-Copy is disabled and JSON Tools mode is Off.
 - Configurable shortcuts in options for Auto-Copy toggle, direct JSON mode switching, URL copy, clean code copy, and Fetch/cURL transforms.
-- Default shortcuts: `Ctrl+Alt+Y` (Auto-Copy toggle), `Ctrl+Alt+P` (JSON Pretty Print), `Ctrl+Alt+O` (JSON Path Copy), `Ctrl+Alt+L` (JSON Markdown Table), `Ctrl+Alt+U` (URL), `Ctrl+Alt+C` (clean code), `Ctrl+Alt+F` (Fetch), `Ctrl+Alt+R` (cURL).
+- Default shortcuts: `Alt+Y` (Auto-Copy toggle), `Alt+P` (JSON Pretty Print), `Alt+O` (JSON Path Copy), `Alt+I` (JSON Markdown Table), `Alt+U` (URL), `Alt+K` (clean code), `Alt+J` (Fetch), `Alt+H` (cURL).
 - `Alt+M` is reserved to toggle a separate Help Menu overlay. JSON Tools Status is description-only (no keybind badge); mode/action cards still show live keybinds.
 - JSON mode shortcuts are toggle + swap aware: there is no separate Off shortcut. Pressing an already-active mode turns JSON Tools Off; pressing another mode switches immediately.
 - Help Menu is responsive for desktop/tablet/narrow widths.
