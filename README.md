@@ -1,6 +1,6 @@
 # yank
 
-Smart clipboard extension inspired by Harpoon Telescope structure.
+Smart clipboard extension inspired by Neovim Yank concept.
 
 ## Features
 
