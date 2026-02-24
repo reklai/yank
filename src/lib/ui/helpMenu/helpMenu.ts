@@ -4,7 +4,6 @@ type JsonModeLabel = "Off" | "Pretty Print" | "Path Copy" | "Markdown Table";
 
 export interface HelpMenuData {
   shortcuts: ShortcutSettings;
-  jsonPickerShortcuts: JsonToolingPickerShortcutSettings;
   autoCopyEnabled: boolean;
   jsonModeLabel: JsonModeLabel;
 }
@@ -20,12 +19,6 @@ export interface HelpMenuController {
 function formatShortcut(shortcut: string): string {
   const trimmed = shortcut.trim();
   return trimmed ? trimmed : "Unbound";
-}
-
-function formatPickerKey(key: string): string {
-  const value = key.trim();
-  if (!value) return "None";
-  return value.length === 1 && /^[a-z]$/i.test(value) ? value.toUpperCase() : value;
 }
 
 function createKeyBadge(value: string): HTMLElement {
@@ -59,11 +52,12 @@ function createInfoCard(input: {
   card.style.cssText = [
     "display:flex",
     "flex-direction:column",
-    "gap:6px",
-    "padding:10px",
-    "border:1px solid rgba(255,255,255,0.1)",
-    "border-radius:10px",
-    "background:rgba(255,255,255,0.03)",
+    "gap:8px",
+    "padding:12px",
+    "border:1px solid rgba(155,198,255,0.24)",
+    "border-radius:11px",
+    "background:linear-gradient(180deg, rgba(58,76,102,0.26), rgba(255,255,255,0.06))",
+    "box-shadow:0 10px 22px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.08)",
     "min-width:0",
   ].join(";");
 
@@ -99,18 +93,18 @@ function createSection(title: string, cards: HTMLElement[]): HTMLElement {
   section.style.cssText = [
     "display:flex",
     "flex-direction:column",
-    "gap:8px",
+    "gap:10px",
   ].join(";");
 
   const heading = document.createElement("div");
-  heading.style.cssText = "font-weight:600;color:#9bc6ff";
+  heading.style.cssText = "font-weight:600;color:#9bc6ff;letter-spacing:0.02em";
   heading.textContent = title;
 
   const grid = document.createElement("div");
   grid.style.cssText = [
     "display:grid",
     "grid-template-columns:repeat(auto-fit, minmax(260px, 1fr))",
-    "gap:8px",
+    "gap:10px",
   ].join(";");
   for (const card of cards) {
     grid.appendChild(card);
@@ -294,10 +288,8 @@ export function createHelpMenu(): HelpMenuController {
       }),
       createInfoCard({
         title: "JSON Tools Status",
-        key: formatShortcut(data.shortcuts.switchToJsonTooling),
         lines: [
-          `Current mode: ${data.jsonModeLabel}.`,
-          "Open picker to change mode.",
+          "No dedicated Off key: press active JSON mode key again to turn Off.",
         ],
       }),
     ]);
@@ -344,23 +336,35 @@ export function createHelpMenu(): HelpMenuController {
     const jsonModes = createSection("JSON Tools Modes", [
       createInfoCard({
         title: "Off",
-        key: formatPickerKey(data.jsonPickerShortcuts.off),
-        lines: ["Copy behavior stays unchanged."],
+        lines: [
+          "No dedicated Off keybind.",
+          "Press the currently active JSON mode key again.",
+          "Copy behavior stays unchanged.",
+        ],
       }),
       createInfoCard({
         title: "Pretty Print",
-        key: formatPickerKey(data.jsonPickerShortcuts.mode1),
-        lines: ["On copy: valid selected JSON is reformatted."],
+        key: formatShortcut(data.shortcuts.jsonToolingPrettyPrint),
+        lines: [
+          "Press key to enable Pretty Print.",
+          "Press same key again to toggle Off.",
+        ],
       }),
       createInfoCard({
         title: "Path Copy",
-        key: formatPickerKey(data.jsonPickerShortcuts.mode2),
-        lines: ["Click JSON keys in decorated blocks to copy full paths."],
+        key: formatShortcut(data.shortcuts.jsonToolingPathCopy),
+        lines: [
+          "Press key to enable Path Copy.",
+          "Click JSON keys in decorated blocks to copy full paths.",
+        ],
       }),
       createInfoCard({
         title: "Markdown Table",
-        key: formatPickerKey(data.jsonPickerShortcuts.mode3),
-        lines: ["On copy: JSON array-of-objects becomes a Markdown table."],
+        key: formatShortcut(data.shortcuts.jsonToolingMarkdownTable),
+        lines: [
+          "Press key to enable Markdown Table.",
+          "Press same key again to toggle Off.",
+        ],
       }),
     ]);
 

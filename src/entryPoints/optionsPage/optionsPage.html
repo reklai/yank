@@ -93,32 +93,6 @@
           <label for="rootPathPrefix">JSON root path prefix</label>
           <input id="rootPathPrefix" type="text" />
         </div>
-
-        <details class="help-menu" id="jsonToolingHelpMenu">
-          <summary>Picker Key Settings</summary>
-          <div class="help-menu-body">
-            <div class="help-line">Picker controls: click, wheel + Enter, Arrow keys, j/k, Esc.</div>
-            <div class="help-line">Reserved picker keys: <code>j</code> and <code>k</code>.</div>
-            <div class="help-line">Quick keys update in the JSON Tools picker after save.</div>
-
-            <div class="field-row">
-              <label for="jsonToolingPickerKeyOff">Quick key: Off</label>
-              <input id="jsonToolingPickerKeyOff" type="text" maxlength="1" spellcheck="false" />
-            </div>
-            <div class="field-row">
-              <label for="jsonToolingPickerKeyMode1">Quick key: Pretty Print</label>
-              <input id="jsonToolingPickerKeyMode1" type="text" maxlength="1" spellcheck="false" />
-            </div>
-            <div class="field-row">
-              <label for="jsonToolingPickerKeyMode2">Quick key: Path Copy</label>
-              <input id="jsonToolingPickerKeyMode2" type="text" maxlength="1" spellcheck="false" />
-            </div>
-            <div class="field-row">
-              <label for="jsonToolingPickerKeyMode3">Quick key: Markdown Table</label>
-              <input id="jsonToolingPickerKeyMode3" type="text" maxlength="1" spellcheck="false" />
-            </div>
-          </div>
-        </details>
       </div>
 
       <div class="section">
@@ -135,11 +109,29 @@
         </div>
 
         <div class="field-row">
-          <label for="shortcutSwitchToJsonTooling">Open JSON Tools mode picker</label>
+          <label for="shortcutJsonToolingPrettyPrint">Toggle JSON Tools: Pretty Print</label>
           <div class="shortcut-input-wrap">
-            <input id="shortcutSwitchToJsonTooling" type="text" spellcheck="false" />
-            <button type="button" class="shortcut-btn capture-btn" data-shortcut-id="shortcutSwitchToJsonTooling">Capture</button>
-            <button type="button" class="shortcut-btn clear-btn" data-shortcut-id="shortcutSwitchToJsonTooling">Clear</button>
+            <input id="shortcutJsonToolingPrettyPrint" type="text" spellcheck="false" />
+            <button type="button" class="shortcut-btn capture-btn" data-shortcut-id="shortcutJsonToolingPrettyPrint">Capture</button>
+            <button type="button" class="shortcut-btn clear-btn" data-shortcut-id="shortcutJsonToolingPrettyPrint">Clear</button>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <label for="shortcutJsonToolingPathCopy">Toggle JSON Tools: Path Copy</label>
+          <div class="shortcut-input-wrap">
+            <input id="shortcutJsonToolingPathCopy" type="text" spellcheck="false" />
+            <button type="button" class="shortcut-btn capture-btn" data-shortcut-id="shortcutJsonToolingPathCopy">Capture</button>
+            <button type="button" class="shortcut-btn clear-btn" data-shortcut-id="shortcutJsonToolingPathCopy">Clear</button>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <label for="shortcutJsonToolingMarkdownTable">Toggle JSON Tools: Markdown Table</label>
+          <div class="shortcut-input-wrap">
+            <input id="shortcutJsonToolingMarkdownTable" type="text" spellcheck="false" />
+            <button type="button" class="shortcut-btn capture-btn" data-shortcut-id="shortcutJsonToolingMarkdownTable">Capture</button>
+            <button type="button" class="shortcut-btn clear-btn" data-shortcut-id="shortcutJsonToolingMarkdownTable">Clear</button>
           </div>
         </div>
 

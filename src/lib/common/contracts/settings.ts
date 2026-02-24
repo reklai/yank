@@ -1,5 +1,4 @@
 import { normalizeShortcutString } from "../utils/shortcuts";
-import { normalizeJsonToolingPickerShortcuts } from "../utils/jsonToolingPickerShortcuts";
 
 export const DEFAULT_SETTINGS: YankSettings = {
   urlCopy: {
@@ -21,11 +20,12 @@ export const DEFAULT_SETTINGS: YankSettings = {
     tableFromArrayEnabled: false,
     decorateJsonBlocks: false,
     rootPathPrefix: "response.data",
-    pickerShortcuts: normalizeJsonToolingPickerShortcuts(undefined),
   },
   shortcuts: {
     switchToAutoCopy: "Alt+T",
-    switchToJsonTooling: "Alt+D",
+    jsonToolingPrettyPrint: "Alt+D",
+    jsonToolingPathCopy: "Alt+Shift+D",
+    jsonToolingMarkdownTable: "Alt+Shift+T",
     copyPageUrl: "Alt+C",
     copyCleanCodeBlock: "Alt+Shift+C",
     copyAsFetch: "Alt+F",
@@ -52,13 +52,15 @@ function normalizeJsonToolingSettings(settings: JsonToolingSettings): JsonToolin
       : settings.tableFromArrayEnabled
         ? "mode3"
         : "off";
+  const rootPathPrefix = typeof settings.rootPathPrefix === "string" && settings.rootPathPrefix.trim()
+    ? settings.rootPathPrefix
+    : DEFAULT_SETTINGS.jsonTooling.rootPathPrefix;
 
   return {
-    ...settings,
     prettyPrintEnabled: mode === "mode1",
     decorateJsonBlocks: mode === "mode2",
     tableFromArrayEnabled: mode === "mode3",
-    pickerShortcuts: normalizeJsonToolingPickerShortcuts(settings.pickerShortcuts),
+    rootPathPrefix,
   };
 }
 
@@ -97,27 +99,28 @@ export function mergeSettings(stored: DeepPartialSettings | null | undefined): Y
     const incoming = {
       ...merged.shortcuts,
       ...stored.shortcuts,
-    };
+    } as Partial<ShortcutSettings>;
     const keys = Object.keys(merged.shortcuts) as Array<keyof ShortcutSettings>;
+    const normalizedShortcuts: ShortcutSettings = { ...merged.shortcuts };
 
     for (const key of keys) {
       const raw = incoming[key];
       if (typeof raw !== "string") {
-        incoming[key] = merged.shortcuts[key];
+        normalizedShortcuts[key] = merged.shortcuts[key];
         continue;
       }
 
       const trimmed = raw.trim();
       if (!trimmed) {
-        incoming[key] = "";
+        normalizedShortcuts[key] = "";
         continue;
       }
 
       const normalized = normalizeShortcutString(trimmed);
-      incoming[key] = normalized || merged.shortcuts[key];
+      normalizedShortcuts[key] = normalized || merged.shortcuts[key];
     }
 
-    merged.shortcuts = incoming;
+    merged.shortcuts = normalizedShortcuts;
   }
 
   return merged;

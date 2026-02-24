@@ -23,9 +23,8 @@ import {
   renderHttpRequestAsCurl,
   renderHttpRequestAsFetch,
 } from "../common/utils/httpTransforms";
-import { doesKeyboardEventMatchShortcut } from "../common/utils/shortcuts";
+import { doesKeyboardEventMatchShortcut, keyboardEventToShortcutString } from "../common/utils/shortcuts";
 import { showToast } from "../common/utils/toast";
-import { openChoicePicker } from "../ui/choicePicker/choicePicker";
 import { createHelpMenu } from "../ui/helpMenu/helpMenu";
 import { createModePill } from "../ui/modePill/modePill";
 
@@ -42,6 +41,9 @@ const CODE_BLOCK_SELECTOR = [
 
 const CODE_COPY_NEAR_THRESHOLD_PX = 140;
 const HELP_MENU_SHORTCUT = "Alt+M";
+const INSTANCE_LOCK_ATTR = "data-yank-instance-active";
+const SHORTCUT_DEDUP_LOCK_ATTR = "data-yank-shortcut-lock";
+const SHORTCUT_DEDUP_MS = 220;
 
 interface CodeCopyCandidate {
   text: string;
@@ -372,7 +374,34 @@ function flashCodeCopyOverlay(rects: DOMRect[]): void {
   }, 240);
 }
 
+function shouldSuppressDuplicateShortcut(event: KeyboardEvent): boolean {
+  if (event.repeat) return true;
+
+  const shortcut = keyboardEventToShortcutString(event);
+  if (!shortcut) return false;
+
+  const host = document.documentElement;
+  const raw = host.getAttribute(SHORTCUT_DEDUP_LOCK_ATTR) || "";
+  const separatorIndex = raw.lastIndexOf("::");
+  if (separatorIndex > 0) {
+    const lastShortcut = raw.slice(0, separatorIndex);
+    const lastTs = Number.parseInt(raw.slice(separatorIndex + 2), 10);
+    if (lastShortcut === shortcut && Number.isFinite(lastTs) && Date.now() - lastTs < SHORTCUT_DEDUP_MS) {
+      return true;
+    }
+  }
+
+  host.setAttribute(SHORTCUT_DEDUP_LOCK_ATTR, `${shortcut}::${Date.now()}`);
+  return false;
+}
+
 export function initApp(): void {
+  const root = document.documentElement;
+  if (root.hasAttribute(INSTANCE_LOCK_ATTR)) {
+    return;
+  }
+  root.setAttribute(INSTANCE_LOCK_ATTR, "1");
+
   if (window.__yankCleanup) {
     window.__yankCleanup();
   }
@@ -394,26 +423,46 @@ export function initApp(): void {
     return settingsState;
   }
 
+  function resolveJsonToolingMode(settings: JsonToolingSettings): JsonToolingModeSelection {
+    if (settings.prettyPrintEnabled) return "mode1";
+    if (settings.decorateJsonBlocks) return "mode2";
+    if (settings.tableFromArrayEnabled) return "mode3";
+    return "off";
+  }
+
+  function jsonToolingModeLabel(mode: JsonToolingModeSelection): "Off" | "Pretty Print" | "Path Copy" | "Markdown Table" {
+    if (mode === "mode1") return "Pretty Print";
+    if (mode === "mode2") return "Path Copy";
+    if (mode === "mode3") return "Markdown Table";
+    return "Off";
+  }
+
+  function buildJsonToolingModePatch(
+    current: JsonToolingSettings,
+    mode: JsonToolingModeSelection,
+  ): JsonToolingSettings {
+    return {
+      ...current,
+      prettyPrintEnabled: mode === "mode1",
+      decorateJsonBlocks: mode === "mode2",
+      tableFromArrayEnabled: mode === "mode3",
+    };
+  }
+
   function buildHelpMenuData(settings: YankSettings): {
     shortcuts: ShortcutSettings;
-    jsonPickerShortcuts: JsonToolingPickerShortcutSettings;
     autoCopyEnabled: boolean;
     jsonModeLabel: "Off" | "Pretty Print" | "Path Copy" | "Markdown Table";
   } {
-    const jsonModeLabel = settings.jsonTooling.prettyPrintEnabled
-      ? "Pretty Print"
-      : settings.jsonTooling.decorateJsonBlocks
-        ? "Path Copy"
-        : settings.jsonTooling.tableFromArrayEnabled
-          ? "Markdown Table"
-          : "Off";
-
     return {
       shortcuts: settings.shortcuts,
-      jsonPickerShortcuts: settings.jsonTooling.pickerShortcuts,
       autoCopyEnabled: settings.autoCopy.enabled,
-      jsonModeLabel,
+      jsonModeLabel: jsonToolingModeLabel(resolveJsonToolingMode(settings.jsonTooling)),
     };
+  }
+
+  function closeTransientPanels(): void {
+    helpMenu.hide();
   }
 
   function showJsonToolingWarning(message: string): void {
@@ -812,58 +861,12 @@ export function initApp(): void {
     });
   }
 
-  function resolveJsonToolingPickerIndex(settings: JsonToolingSettings): number {
-    if (settings.prettyPrintEnabled) return 1;
-    if (settings.decorateJsonBlocks) return 2;
-    if (settings.tableFromArrayEnabled) return 3;
-    return 0;
-  }
-
-  async function openJsonToolingModePicker(): Promise<void> {
+  async function switchJsonToolingModeByShortcut(targetMode: Exclude<JsonToolingModeSelection, "off">): Promise<void> {
     const settings = currentSettings();
-    const pickerShortcuts = settings.jsonTooling.pickerShortcuts;
+    const currentMode = resolveJsonToolingMode(settings.jsonTooling);
+    const nextMode: JsonToolingModeSelection = currentMode === targetMode ? "off" : targetMode;
 
-    const selected = await openChoicePicker(
-      "JSON Tools Mode",
-      [
-        {
-          id: "off",
-          label: "Off",
-          description: "Copy text -> unchanged output -> no JSON decoration.",
-          quickKey: pickerShortcuts.off,
-        },
-        {
-          id: "mode1",
-          label: "Pretty Print",
-          description: "Selected valid JSON -> pretty format -> copied as indented JSON.",
-          quickKey: pickerShortcuts.mode1,
-        },
-        {
-          id: "mode2",
-          label: "Path Copy",
-          description: "JSON block key click -> full path (response.data.x) -> path copied.",
-          quickKey: pickerShortcuts.mode2,
-        },
-        {
-          id: "mode3",
-          label: "Markdown Table",
-          description: "JSON array of objects -> Markdown table -> table copied.",
-          quickKey: pickerShortcuts.mode3,
-        },
-      ],
-      resolveJsonToolingPickerIndex(settings.jsonTooling),
-    );
-
-    if (!selected) return;
-
-    const latestSettings = currentSettings();
-    const nextJsonTooling: JsonToolingSettings = {
-      ...latestSettings.jsonTooling,
-      prettyPrintEnabled: selected === "mode1",
-      decorateJsonBlocks: selected === "mode2",
-      tableFromArrayEnabled: selected === "mode3",
-    };
-
+    const nextJsonTooling = buildJsonToolingModePatch(settings.jsonTooling, nextMode);
     await patchSettings({
       jsonTooling: nextJsonTooling,
     });
@@ -873,9 +876,16 @@ export function initApp(): void {
       modePill.flash();
     }
 
-    if (selected === "mode2") {
+    if (nextMode === "mode2") {
       scheduleJsonBlockDecoration(true);
     }
+
+    showToast(
+      nextMode === "off"
+        ? "JSON Tools disabled"
+        : `JSON Tools mode: ${jsonToolingModeLabel(nextMode)}`,
+      { kind: "success" },
+    );
   }
 
   async function handleRuntimeMessage(message: unknown): Promise<unknown> {
@@ -897,6 +907,10 @@ export function initApp(): void {
   }
 
   async function keydownHandler(event: KeyboardEvent): Promise<void> {
+    if (shouldSuppressDuplicateShortcut(event)) {
+      return;
+    }
+
     if (event.key === "Escape" && helpMenu.isVisible()) {
       event.preventDefault();
       event.stopPropagation();
@@ -926,10 +940,24 @@ export function initApp(): void {
       return;
     }
 
-    if (doesKeyboardEventMatchShortcut(event, shortcuts.switchToJsonTooling)) {
+    if (doesKeyboardEventMatchShortcut(event, shortcuts.jsonToolingPrettyPrint)) {
       event.preventDefault();
       event.stopPropagation();
-      await openJsonToolingModePicker();
+      await switchJsonToolingModeByShortcut("mode1");
+      return;
+    }
+
+    if (doesKeyboardEventMatchShortcut(event, shortcuts.jsonToolingPathCopy)) {
+      event.preventDefault();
+      event.stopPropagation();
+      await switchJsonToolingModeByShortcut("mode2");
+      return;
+    }
+
+    if (doesKeyboardEventMatchShortcut(event, shortcuts.jsonToolingMarkdownTable)) {
+      event.preventDefault();
+      event.stopPropagation();
+      await switchJsonToolingModeByShortcut("mode3");
       return;
     }
 
@@ -1014,12 +1042,27 @@ export function initApp(): void {
         && !event.metaKey
         && !event.shiftKey
       ) return;
-      void keydownHandler(event);
+      void keydownHandler(event).catch((error) => {
+        closeTransientPanels();
+        console.error("[Yank] key action failed", error);
+        showToast("Action failed. Open panels were closed.", { kind: "error", dismissMs: 1700 });
+      });
     };
     const pointerMoveListener = (event: PointerEvent): void => {
       pointerClientX = event.clientX;
       pointerClientY = event.clientY;
       hoveredCodeElement = closestCodeContainerFromNode(event.target as Node | null);
+    };
+    const visibilityChangeListener = (): void => {
+      if (document.visibilityState !== "visible") {
+        closeTransientPanels();
+      }
+    };
+    const pageHideListener = (): void => {
+      closeTransientPanels();
+    };
+    const blurListener = (): void => {
+      closeTransientPanels();
     };
 
     browser.runtime.onMessage.addListener(handleRuntimeMessage);
@@ -1029,6 +1072,9 @@ export function initApp(): void {
     document.addEventListener("selectionchange", onSelectionChanged, true);
     document.addEventListener("copy", maybeTransformCopyEvent, true);
     document.addEventListener("click", onJsonKeyClick, true);
+    document.addEventListener("visibilitychange", visibilityChangeListener, true);
+    window.addEventListener("pagehide", pageHideListener, true);
+    window.addEventListener("blur", blurListener, true);
 
     const mutationObserver = new MutationObserver(() => {
       if (currentSettings().jsonTooling.decorateJsonBlocks) {
@@ -1056,6 +1102,12 @@ export function initApp(): void {
       document.removeEventListener("selectionchange", onSelectionChanged, true);
       document.removeEventListener("copy", maybeTransformCopyEvent, true);
       document.removeEventListener("click", onJsonKeyClick, true);
+      document.removeEventListener("visibilitychange", visibilityChangeListener, true);
+      window.removeEventListener("pagehide", pageHideListener, true);
+      window.removeEventListener("blur", blurListener, true);
+      if (document.documentElement.hasAttribute(INSTANCE_LOCK_ATTR)) {
+        document.documentElement.removeAttribute(INSTANCE_LOCK_ATTR);
+      }
     };
   }
 

@@ -6,13 +6,6 @@ declare module "*.css" {
 type SiteRuleMode = "blacklist" | "whitelist";
 type JsonToolingModeSelection = "off" | "mode1" | "mode2" | "mode3";
 
-interface JsonToolingPickerShortcutSettings {
-  off: string;
-  mode1: string;
-  mode2: string;
-  mode3: string;
-}
-
 interface UrlCopySettings {
   showToast: boolean;
   toastDismissMs: number;
@@ -34,12 +27,13 @@ interface JsonToolingSettings {
   tableFromArrayEnabled: boolean;
   decorateJsonBlocks: boolean;
   rootPathPrefix: string;
-  pickerShortcuts: JsonToolingPickerShortcutSettings;
 }
 
 interface ShortcutSettings {
   switchToAutoCopy: string;
-  switchToJsonTooling: string;
+  jsonToolingPrettyPrint: string;
+  jsonToolingPathCopy: string;
+  jsonToolingMarkdownTable: string;
   copyPageUrl: string;
   copyCleanCodeBlock: string;
   copyAsFetch: string;

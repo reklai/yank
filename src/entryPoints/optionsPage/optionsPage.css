@@ -92,35 +92,6 @@ body {
   gap: 8px;
 }
 
-.help-menu {
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  background: rgba(0, 0, 0, 0.16);
-  padding: 8px 10px;
-}
-
-.help-menu > summary {
-  cursor: pointer;
-  color: #9bc6ff;
-  user-select: none;
-}
-
-.help-menu-body {
-  margin-top: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.help-line {
-  color: #a6a6a6;
-  font-size: 12px;
-}
-
-.help-line code {
-  color: #d4e6ff;
-}
-
 .shortcut-help {
   color: #a0a0a0;
   font-size: 12px;

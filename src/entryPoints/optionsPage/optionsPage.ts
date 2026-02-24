@@ -3,15 +3,12 @@ import {
   keyboardEventToShortcutString,
   normalizeShortcutString,
 } from "../../lib/common/utils/shortcuts";
-import {
-  JSON_TOOLING_PICKER_RESERVED_KEYS,
-  normalizeJsonToolingPickerKey,
-  validateJsonToolingPickerShortcuts,
-} from "../../lib/common/utils/jsonToolingPickerShortcuts";
 
 const SHORTCUT_INPUT_IDS = [
   "shortcutSwitchToAutoCopy",
-  "shortcutSwitchToJsonTooling",
+  "shortcutJsonToolingPrettyPrint",
+  "shortcutJsonToolingPathCopy",
+  "shortcutJsonToolingMarkdownTable",
   "shortcutCopyPageUrl",
   "shortcutCopyCleanCodeBlock",
   "shortcutCopyAsFetch",
@@ -20,38 +17,11 @@ const SHORTCUT_INPUT_IDS = [
 
 type ShortcutInputId = (typeof SHORTCUT_INPUT_IDS)[number];
 
-const JSON_TOOLING_PICKER_KEY_INPUT_IDS = [
-  "jsonToolingPickerKeyOff",
-  "jsonToolingPickerKeyMode1",
-  "jsonToolingPickerKeyMode2",
-  "jsonToolingPickerKeyMode3",
-] as const;
-
-type JsonToolingPickerKeyInputId = (typeof JSON_TOOLING_PICKER_KEY_INPUT_IDS)[number];
-
-const JSON_TOOLING_PICKER_FIELD_MAP: Record<
-JsonToolingPickerKeyInputId,
-keyof JsonToolingPickerShortcutSettings
-> = {
-  jsonToolingPickerKeyOff: "off",
-  jsonToolingPickerKeyMode1: "mode1",
-  jsonToolingPickerKeyMode2: "mode2",
-  jsonToolingPickerKeyMode3: "mode3",
-};
-
-const JSON_TOOLING_PICKER_LABELS: Record<
-JsonToolingPickerKeyInputId,
-string
-> = {
-  jsonToolingPickerKeyOff: "Off",
-  jsonToolingPickerKeyMode1: "Pretty Print",
-  jsonToolingPickerKeyMode2: "Path Copy",
-  jsonToolingPickerKeyMode3: "Markdown Table",
-};
-
 const SHORTCUT_FIELD_MAP: Record<ShortcutInputId, keyof ShortcutSettings> = {
   shortcutSwitchToAutoCopy: "switchToAutoCopy",
-  shortcutSwitchToJsonTooling: "switchToJsonTooling",
+  shortcutJsonToolingPrettyPrint: "jsonToolingPrettyPrint",
+  shortcutJsonToolingPathCopy: "jsonToolingPathCopy",
+  shortcutJsonToolingMarkdownTable: "jsonToolingMarkdownTable",
   shortcutCopyPageUrl: "copyPageUrl",
   shortcutCopyCleanCodeBlock: "copyCleanCodeBlock",
   shortcutCopyAsFetch: "copyAsFetch",
@@ -60,7 +30,9 @@ const SHORTCUT_FIELD_MAP: Record<ShortcutInputId, keyof ShortcutSettings> = {
 
 const SHORTCUT_LABELS: Record<ShortcutInputId, string> = {
   shortcutSwitchToAutoCopy: "Toggle Auto-Copy on/off",
-  shortcutSwitchToJsonTooling: "Open JSON Tools mode picker",
+  shortcutJsonToolingPrettyPrint: "Toggle JSON Tools: Pretty Print",
+  shortcutJsonToolingPathCopy: "Toggle JSON Tools: Path Copy",
+  shortcutJsonToolingMarkdownTable: "Toggle JSON Tools: Markdown Table",
   shortcutCopyPageUrl: "Copy current page URL",
   shortcutCopyCleanCodeBlock: "Copy clean code block",
   shortcutCopyAsFetch: "Copy as Fetch",
@@ -69,7 +41,9 @@ const SHORTCUT_LABELS: Record<ShortcutInputId, string> = {
 
 const SHORTCUT_FIELD_LABELS: Record<keyof ShortcutSettings, string> = {
   switchToAutoCopy: SHORTCUT_LABELS.shortcutSwitchToAutoCopy,
-  switchToJsonTooling: SHORTCUT_LABELS.shortcutSwitchToJsonTooling,
+  jsonToolingPrettyPrint: SHORTCUT_LABELS.shortcutJsonToolingPrettyPrint,
+  jsonToolingPathCopy: SHORTCUT_LABELS.shortcutJsonToolingPathCopy,
+  jsonToolingMarkdownTable: SHORTCUT_LABELS.shortcutJsonToolingMarkdownTable,
   copyPageUrl: SHORTCUT_LABELS.shortcutCopyPageUrl,
   copyCleanCodeBlock: SHORTCUT_LABELS.shortcutCopyCleanCodeBlock,
   copyAsFetch: SHORTCUT_LABELS.shortcutCopyAsFetch,
@@ -112,7 +86,6 @@ interface FormRefs {
   siteRules: HTMLTextAreaElement;
   jsonToolingModeSelect: HTMLSelectElement;
   rootPathPrefix: HTMLInputElement;
-  jsonToolingPickerKeyInputs: Record<JsonToolingPickerKeyInputId, HTMLInputElement>;
   shortcutInputs: Record<ShortcutInputId, HTMLInputElement>;
 }
 
@@ -123,14 +96,6 @@ function byId<T extends HTMLElement>(id: string): T {
 function collectShortcutRefs(): Record<ShortcutInputId, HTMLInputElement> {
   const refs = {} as Record<ShortcutInputId, HTMLInputElement>;
   for (const id of SHORTCUT_INPUT_IDS) {
-    refs[id] = byId<HTMLInputElement>(id);
-  }
-  return refs;
-}
-
-function collectJsonToolingPickerKeyRefs(): Record<JsonToolingPickerKeyInputId, HTMLInputElement> {
-  const refs = {} as Record<JsonToolingPickerKeyInputId, HTMLInputElement>;
-  for (const id of JSON_TOOLING_PICKER_KEY_INPUT_IDS) {
     refs[id] = byId<HTMLInputElement>(id);
   }
   return refs;
@@ -150,7 +115,6 @@ function collectFormRefs(): FormRefs {
     siteRules: byId("siteRules"),
     jsonToolingModeSelect: byId("jsonToolingModeSelect"),
     rootPathPrefix: byId("rootPathPrefix"),
-    jsonToolingPickerKeyInputs: collectJsonToolingPickerKeyRefs(),
     shortcutInputs: collectShortcutRefs(),
   };
 }
@@ -181,36 +145,11 @@ function fillForm(settings: YankSettings, refs: FormRefs): void {
 
   refs.jsonToolingModeSelect.value = resolveJsonToolingMode(settings.jsonTooling);
   refs.rootPathPrefix.value = settings.jsonTooling.rootPathPrefix;
-  for (const id of JSON_TOOLING_PICKER_KEY_INPUT_IDS) {
-    const field = JSON_TOOLING_PICKER_FIELD_MAP[id];
-    refs.jsonToolingPickerKeyInputs[id].value = settings.jsonTooling.pickerShortcuts[field];
-  }
 
   for (const id of SHORTCUT_INPUT_IDS) {
     const field = SHORTCUT_FIELD_MAP[id];
     refs.shortcutInputs[id].value = settings.shortcuts[field];
   }
-}
-
-function collectJsonToolingPickerShortcutPatch(refs: FormRefs): JsonToolingPickerShortcutSettings {
-  const next = {} as JsonToolingPickerShortcutSettings;
-
-  for (const id of JSON_TOOLING_PICKER_KEY_INPUT_IDS) {
-    const normalized = normalizeJsonToolingPickerKey(refs.jsonToolingPickerKeyInputs[id].value);
-    if (!normalized) {
-      throw new Error(
-        `JSON Tools picker key for "${JSON_TOOLING_PICKER_LABELS[id]}" must be one visible character.`,
-      );
-    }
-    next[JSON_TOOLING_PICKER_FIELD_MAP[id]] = normalized;
-  }
-
-  const validationError = validateJsonToolingPickerShortcuts(next, JSON_TOOLING_PICKER_RESERVED_KEYS);
-  if (validationError) {
-    throw new Error(validationError);
-  }
-
-  return next;
 }
 
 function collectShortcutPatch(refs: FormRefs, current: YankSettings): ShortcutSettings {
@@ -279,7 +218,6 @@ function collectPatch(refs: FormRefs, current: YankSettings): Partial<YankSettin
     ? modeCandidate
     : "off";
   const jsonToolingModePatch = buildJsonToolingModePatch(current.jsonTooling, mode);
-  const jsonToolingPickerShortcuts = collectJsonToolingPickerShortcutPatch(refs);
 
   return {
     urlCopy: {
@@ -304,7 +242,6 @@ function collectPatch(refs: FormRefs, current: YankSettings): Partial<YankSettin
     jsonTooling: {
       ...jsonToolingModePatch,
       rootPathPrefix: refs.rootPathPrefix.value.trim() || "response.data",
-      pickerShortcuts: jsonToolingPickerShortcuts,
     },
     shortcuts,
   };
@@ -394,13 +331,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (normalized) {
         refs.shortcutInputs[id].value = normalized;
       }
-    });
-  }
-
-  for (const id of JSON_TOOLING_PICKER_KEY_INPUT_IDS) {
-    refs.jsonToolingPickerKeyInputs[id].addEventListener("blur", () => {
-      const normalized = normalizeJsonToolingPickerKey(refs.jsonToolingPickerKeyInputs[id].value);
-      refs.jsonToolingPickerKeyInputs[id].value = normalized;
     });
   }
 
