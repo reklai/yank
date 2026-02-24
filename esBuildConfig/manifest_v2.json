@@ -1,0 +1,56 @@
+{
+  "manifest_version": 2,
+  "name": "Yank",
+  "version": "0.1.0",
+  "description": "Smart clipboard extension with URL copy, auto-copy, and JSON Tools transforms.",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "@yank.reklai",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
+    }
+  },
+  "permissions": [
+    "tabs",
+    "activeTab",
+    "storage",
+    "clipboardRead",
+    "clipboardWrite",
+    "<all_urls>"
+  ],
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": false
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["contentScript.js"],
+      "match_about_blank": true,
+      "run_at": "document_idle"
+    }
+  ],
+  "commands": {
+    "copy-page-url": {
+      "description": "Copy current page URL"
+    }
+  },
+  "options_ui": {
+    "page": "optionsPage/optionsPage.html",
+    "open_in_tab": true
+  },
+  "browser_action": {
+    "default_icon": {
+      "48": "icons/icon-48.png",
+      "96": "icons/icon-96.png"
+    },
+    "default_popup": "toolbarPopup/toolbarPopup.html",
+    "default_title": "Yank"
+  },
+  "icons": {
+    "48": "icons/icon-48.png",
+    "96": "icons/icon-96.png",
+    "128": "icons/icon-128.png"
+  }
+}

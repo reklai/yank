@@ -1,0 +1,264 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  min-height: 100vh;
+  background: #1e1e1e;
+  color: #e0e0e0;
+  font-family: 'SF Mono', 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 13px;
+  padding: 36px 18px 80px;
+  display: flex;
+  justify-content: center;
+}
+
+.settings-container {
+  width: min(860px, 100%);
+}
+
+.settings-titlebar {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: #3a3a3c;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: none;
+  border-radius: 10px 10px 0 0;
+}
+
+.traffic-lights {
+  display: flex;
+  gap: 7px;
+  margin-right: 14px;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.dot-close { background: #ff5f57; }
+.dot-minimize { background: #febc2e; }
+.dot-maximize { background: #28c840; }
+
+.titlebar-text {
+  flex: 1;
+  text-align: center;
+  margin-right: 50px;
+  color: #a0a0a0;
+}
+
+.settings-body {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 0 0 10px 10px;
+  background: #252525;
+  padding: 22px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.section {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.section h2 {
+  color: #9bc6ff;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.field-column {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.help-menu {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.16);
+  padding: 8px 10px;
+}
+
+.help-menu > summary {
+  cursor: pointer;
+  color: #9bc6ff;
+  user-select: none;
+}
+
+.help-menu-body {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.help-line {
+  color: #a6a6a6;
+  font-size: 12px;
+}
+
+.help-line code {
+  color: #d4e6ff;
+}
+
+.shortcut-help {
+  color: #a0a0a0;
+  font-size: 12px;
+}
+
+.shortcut-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.shortcut-input-wrap input[type="text"] {
+  flex: 1;
+  min-width: 0;
+}
+
+.shortcut-btn {
+  padding: 6px 10px;
+  white-space: nowrap;
+}
+
+.shortcut-btn.active-capture {
+  border-color: rgba(10, 132, 255, 0.85);
+  color: #9bc6ff;
+}
+
+.check-row {
+  display: flex;
+}
+
+.check-row label {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+label {
+  color: #c8c8c8;
+}
+
+input,
+select,
+textarea,
+button {
+  font: inherit;
+}
+
+input[type="text"],
+input[type="number"],
+select,
+textarea {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 7px;
+  color: #e0e0e0;
+  padding: 7px 9px;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+input[type="checkbox"] {
+  accent-color: #0a84ff;
+}
+
+.actions {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+button {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #e0e0e0;
+  padding: 8px 14px;
+  cursor: pointer;
+}
+
+button:hover {
+  border-color: rgba(10, 132, 255, 0.6);
+  color: #9bc6ff;
+}
+
+button.primary {
+  border-color: rgba(10, 132, 255, 0.65);
+  background: rgba(10, 132, 255, 0.16);
+  color: #cde5ff;
+}
+
+.status-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  transform: translateY(100%);
+  opacity: 0;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  text-align: center;
+  padding: 8px 16px;
+  background: #252525;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  color: #66df78;
+}
+
+.status-bar.visible {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.status-bar.error {
+  color: #ff7e77;
+  border-top-color: rgba(255, 95, 87, 0.5);
+}
+
+@media (max-width: 760px) {
+  .field-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .shortcut-input-wrap {
+    flex-wrap: wrap;
+  }
+
+  .shortcut-input-wrap input[type="text"] {
+    width: 100%;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  button {
+    width: 100%;
+  }
+}

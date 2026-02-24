@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <link rel="stylesheet" href="toolbarPopup.css" />
+</head>
+<body>
+  <div class="popup-shell">
+    <div class="titlebar">
+      <div class="traffic-lights">
+        <span class="dot dot-close"></span>
+        <span class="dot dot-minimize"></span>
+        <span class="dot dot-maximize"></span>
+      </div>
+      <span class="titlebar-text">Yank</span>
+    </div>
+
+    <div class="section toggles">
+      <label><input type="checkbox" id="autoCopyToggle" /> Auto-copy on highlight</label>
+      <label><input type="checkbox" id="appendModeToggle" /> Append mode</label>
+      <label for="jsonToolingModeSelect">JSON Tools mode</label>
+      <select id="jsonToolingModeSelect">
+        <option value="off">Off</option>
+        <option value="mode1">Pretty Print</option>
+        <option value="mode2">Path Copy</option>
+        <option value="mode3">Markdown Table</option>
+      </select>
+    </div>
+
+    <div class="section">
+      <div class="actions">
+        <button id="optionsBtn">Open settings</button>
+      </div>
+    </div>
+
+    <div class="footer">
+      All shortcuts are configurable in Settings.
+    </div>
+  </div>
+
+  <script src="toolbarPopup.js"></script>
+</body>
+</html>
