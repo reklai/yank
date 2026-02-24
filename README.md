@@ -1,6 +1,6 @@
 # yank
 
-Smart clipboard extension inspired by Yank concept.
+Smart clipboard extension inspired by Neovim Yank concept.
 
 ## Features
 
