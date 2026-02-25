@@ -11,8 +11,6 @@ const SHORTCUT_INPUT_IDS = [
   "shortcutJsonToolingMarkdownTable",
   "shortcutCopyPageUrl",
   "shortcutCopyCleanCodeBlock",
-  "shortcutCopyAsFetch",
-  "shortcutCopyAsCurl",
 ] as const;
 
 type ShortcutInputId = (typeof SHORTCUT_INPUT_IDS)[number];
@@ -24,8 +22,6 @@ const SHORTCUT_FIELD_MAP: Record<ShortcutInputId, keyof ShortcutSettings> = {
   shortcutJsonToolingMarkdownTable: "jsonToolingMarkdownTable",
   shortcutCopyPageUrl: "copyPageUrl",
   shortcutCopyCleanCodeBlock: "copyCleanCodeBlock",
-  shortcutCopyAsFetch: "copyAsFetch",
-  shortcutCopyAsCurl: "copyAsCurl",
 };
 
 const SHORTCUT_LABELS: Record<ShortcutInputId, string> = {
@@ -35,8 +31,6 @@ const SHORTCUT_LABELS: Record<ShortcutInputId, string> = {
   shortcutJsonToolingMarkdownTable: "Toggle JSON Tools: Markdown Table",
   shortcutCopyPageUrl: "Copy current page URL",
   shortcutCopyCleanCodeBlock: "Copy clean code block",
-  shortcutCopyAsFetch: "Copy as Fetch",
-  shortcutCopyAsCurl: "Copy as cURL",
 };
 
 const SHORTCUT_FIELD_LABELS: Record<keyof ShortcutSettings, string> = {
@@ -46,8 +40,6 @@ const SHORTCUT_FIELD_LABELS: Record<keyof ShortcutSettings, string> = {
   jsonToolingMarkdownTable: SHORTCUT_LABELS.shortcutJsonToolingMarkdownTable,
   copyPageUrl: SHORTCUT_LABELS.shortcutCopyPageUrl,
   copyCleanCodeBlock: SHORTCUT_LABELS.shortcutCopyCleanCodeBlock,
-  copyAsFetch: SHORTCUT_LABELS.shortcutCopyAsFetch,
-  copyAsCurl: SHORTCUT_LABELS.shortcutCopyAsCurl,
 };
 
 const RESERVED_HELP_MENU_SHORTCUT = "Alt+M";

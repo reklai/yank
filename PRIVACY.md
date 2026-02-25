@@ -1,6 +1,6 @@
 # Privacy Policy — Yank
 
-**Last updated:** February 24, 2026
+**Last updated:** February 25, 2026
 
 ## Summary
 
@@ -22,8 +22,8 @@ To provide features, Yank processes data in memory on your device:
 
 - Selected text for Auto-Copy and JSON Tools transforms
 - Current page URL for URL copy
-- Nearby/selected code blocks for clean code copy and request transforms
-- Clipboard content for fallback parsing in Fetch/cURL transforms
+- Nearby/selected code blocks for clean code copy and JSON Tools fallback parsing
+- Clipboard content for JSON Tools fallback parsing
 - Open tab context for command routing and active-tab actions
 
 Processing is local and not transmitted externally.
@@ -46,7 +46,7 @@ None. Yank:
 | `tabs` | Route extension commands/messages to the active tab |
 | `activeTab` | Execute active-tab actions (for example copy current page URL) |
 | `storage` | Persist your local extension settings |
-| `clipboardRead` | Read clipboard text fallback for request transforms |
+| `clipboardRead` | Read clipboard text fallback for JSON Tools transforms |
 | `clipboardWrite` | Write copied/transformed output to clipboard |
 | `<all_urls>` / `host_permissions` | Run content features on pages where you use the extension |
 | `scripting` (MV3 only) | Inject content script when needed in Chrome builds |

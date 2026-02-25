@@ -313,24 +313,6 @@ export function createHelpMenu(): HelpMenuController {
           "Result: cleaned code copied.",
         ],
       }),
-      createInfoCard({
-        title: "Copy as Fetch",
-        key: formatShortcut(data.shortcuts.copyAsFetch),
-        lines: [
-          "Do: Select request text and press key.",
-          "Input: selection -> code source -> clipboard fallback.",
-          "Result: fetch(...) code copied.",
-        ],
-      }),
-      createInfoCard({
-        title: "Copy as cURL",
-        key: formatShortcut(data.shortcuts.copyAsCurl),
-        lines: [
-          "Do: Select request text and press key.",
-          "Input: selection -> code source -> clipboard fallback.",
-          "Result: curl command copied.",
-        ],
-      }),
     ]);
 
     const jsonModes = createSection("JSON Tools Modes", [
@@ -347,6 +329,7 @@ export function createHelpMenu(): HelpMenuController {
         key: formatShortcut(data.shortcuts.jsonToolingPrettyPrint),
         lines: [
           "Press key to enable Pretty Print.",
+          "Copy reads from selection -> nearby code block -> clipboard.",
           "Press same key again to toggle Off.",
         ],
       }),
@@ -363,6 +346,7 @@ export function createHelpMenu(): HelpMenuController {
         key: formatShortcut(data.shortcuts.jsonToolingMarkdownTable),
         lines: [
           "Press key to enable Markdown Table.",
+          "Copy reads from selection -> nearby code block -> clipboard.",
           "Press same key again to toggle Off.",
         ],
       }),

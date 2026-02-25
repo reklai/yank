@@ -28,8 +28,6 @@ export const DEFAULT_SETTINGS: YankSettings = {
     jsonToolingMarkdownTable: "Alt+Shift+T",
     copyPageUrl: "Alt+C",
     copyCleanCodeBlock: "Alt+Shift+C",
-    copyAsFetch: "Alt+F",
-    copyAsCurl: "Alt+Shift+F",
   },
 };
 

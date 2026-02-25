@@ -10,7 +10,6 @@ It focuses on one thing: making copy actions fast and predictable on any page.
 - Auto-copies selected text when Auto-Copy is enabled.
 - Applies JSON copy transforms (Pretty Print, Path Copy, Markdown Table).
 - Copies clean code blocks from selection/focus/hover/nearby code.
-- Converts detected request text to `fetch(...)` or `curl ...`.
 - Shows in-page status/toasts and a Help Menu with live keybinds.
 
 Defaults:
@@ -33,10 +32,20 @@ Defaults:
   - Selection character count badge
 
 ### 3) JSON Tools (one mode active at a time)
-- Pretty Print: reformat valid selected JSON.
+- Pretty Print: reformat valid JSON for readability.
 - Path Copy: click decorated JSON keys to copy full path.
 - Markdown Table: convert JSON array-of-objects to a Markdown table.
 - Off behavior: press the currently active JSON mode shortcut again.
+- Input resolution order for copy transforms:
+  - selection
+  - nearby code block
+  - clipboard fallback
+- Recovery parser accepts:
+  - normal JSON
+  - JSON inside code fences
+  - escaped JSON strings
+  - common JS-like object logs (single quotes, trailing commas, unquoted keys)
+- If parse fails, toast includes actionable details (line/column + hint).
 
 ### 4) Clean code block copy
 - Source priority:
@@ -45,13 +54,6 @@ Defaults:
   - hovered code block
   - nearest code block
 - Output: cleaned code text.
-
-### 5) Copy as Fetch / cURL
-- Detects request-like text from:
-  - selection
-  - code block candidate
-  - clipboard fallback
-- Outputs ready-to-paste Fetch or cURL snippets.
 
 ## Default Shortcuts
 
@@ -63,8 +65,6 @@ Defaults:
 | Toggle JSON Tools: Markdown Table | `Alt+Shift+T` |
 | Copy current page URL | `Alt+C` |
 | Copy clean code block | `Alt+Shift+C` |
-| Copy as Fetch | `Alt+F` |
-| Copy as cURL | `Alt+Shift+F` |
 | Toggle Help Menu (reserved) | `Alt+M` |
 
 Notes:
