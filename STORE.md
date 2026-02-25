@@ -8,7 +8,7 @@ Yank
 
 ## Summary (short — AMO/CWS listing)
 
-Keyboard-first clipboard utility: copy page URL, auto-copy selections, JSON transforms, clean code copy, and Fetch/cURL conversion.
+Keyboard-first clipboard utility: copy page URL, auto-copy selections, JSON transforms, and clean code copy.
 
 ## Description
 
@@ -23,8 +23,8 @@ Core capabilities:
   - Pretty Print selected JSON on copy
   - Path Copy from decorated JSON blocks
   - Markdown Table conversion for JSON array-of-objects
+  - Recovery parsing from selection -> nearby code block -> clipboard fallback with actionable parse-error toasts
 - Clean code block copy from selection/caret/hover/nearby code blocks.
-- Copy detected request text as Fetch or cURL snippets.
 - Fully configurable shortcuts in Options with duplicate-shortcut guards.
 
 Privacy and behavior claims:
@@ -35,14 +35,14 @@ Privacy and behavior claims:
 
 ## Tags / Keywords
 
-clipboard, copy, productivity, developer tools, json, markdown, curl, fetch, shortcuts, browser extension
+clipboard, copy, productivity, developer tools, json, markdown, shortcuts, browser extension
 
 ## Permission Rationale (Store Submission Notes)
 
 - **tabs**: route background command/message actions to the active tab.
 - **activeTab**: execute tab-scoped actions (such as copy current page URL and content-script fallbacks).
 - **storage**: persist local settings (shortcuts and feature options).
-- **clipboardRead**: read clipboard text for request-transform fallback flow.
+- **clipboardRead**: read clipboard text for JSON Tools fallback parsing when no selection/code block input is present.
 - **clipboardWrite**: write copied/transformed content to clipboard.
 - **host permissions (`<all_urls>`)**: enable content features on pages where user invokes Yank.
 - **scripting (Chrome MV3 only)**: inject content script when needed if tab was open before install/startup.

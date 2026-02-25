@@ -36,8 +36,6 @@ interface ShortcutSettings {
   jsonToolingMarkdownTable: string;
   copyPageUrl: string;
   copyCleanCodeBlock: string;
-  copyAsFetch: string;
-  copyAsCurl: string;
 }
 
 interface YankSettings {

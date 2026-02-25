@@ -15,14 +15,9 @@ import {
   jsonArrayToMarkdownTable,
   normalizeWhitespace,
   parsePotentialJson,
+  parsePotentialJsonWithRecovery,
   prettyPrintJson,
-  shorten,
 } from "../common/utils/helpers";
-import {
-  parseHttpRequestShape,
-  renderHttpRequestAsCurl,
-  renderHttpRequestAsFetch,
-} from "../common/utils/httpTransforms";
 import { doesKeyboardEventMatchShortcut, keyboardEventToShortcutString } from "../common/utils/shortcuts";
 import { showToast } from "../common/utils/toast";
 import { createHelpMenu } from "../ui/helpMenu/helpMenu";
@@ -50,12 +45,11 @@ interface CodeCopyCandidate {
   rects: DOMRect[];
 }
 
-type HttpTransformTarget = "fetch" | "curl";
+type JsonToolingInputSource = "selection" | "code-block" | "clipboard";
 
-interface HttpTransformCandidate {
+interface JsonToolingInputCandidate {
   text: string;
-  rects: DOMRect[];
-  source: "selection" | "code-block" | "clipboard";
+  source: JsonToolingInputSource;
 }
 
 function isEditableElement(node: EventTarget | null): boolean {
@@ -601,7 +595,7 @@ export function initApp(): void {
     return buildCandidateFromElement(bestElement);
   }
 
-  function detectHttpTransformCandidate(): HttpTransformCandidate | null {
+  function resolveSelectionJsonToolingCandidate(): JsonToolingInputCandidate | null {
     const selection = window.getSelection();
     if (selection && selection.rangeCount > 0 && !selection.isCollapsed) {
       const range = selection.getRangeAt(0);
@@ -609,22 +603,59 @@ export function initApp(): void {
       if (cleanedSelection.trim()) {
         return {
           text: cleanedSelection,
-          rects: getRangeRects(range),
           source: "selection",
         };
       }
     }
+    return null;
+  }
 
+  function resolveCodeJsonToolingCandidate(): JsonToolingInputCandidate | null {
     const codeCandidate = detectCodeCopyCandidate();
     if (codeCandidate) {
       return {
         text: codeCandidate.text,
-        rects: codeCandidate.rects,
         source: "code-block",
       };
     }
 
     return null;
+  }
+
+  async function resolveJsonToolingInputCandidates(): Promise<JsonToolingInputCandidate[]> {
+    const candidates: JsonToolingInputCandidate[] = [];
+    const seen = new Set<string>();
+
+    function pushCandidate(candidate: JsonToolingInputCandidate | null): void {
+      if (!candidate) return;
+      const normalized = candidate.text.trim();
+      if (!normalized || seen.has(normalized)) return;
+      seen.add(normalized);
+      candidates.push({ ...candidate, text: normalized });
+    }
+
+    pushCandidate(resolveSelectionJsonToolingCandidate());
+    pushCandidate(resolveCodeJsonToolingCandidate());
+
+    const clipboardSource = cleanCopiedCode(await readClipboardText());
+    if (clipboardSource.trim()) {
+      pushCandidate({
+        text: clipboardSource,
+        source: "clipboard",
+      });
+    }
+
+    return candidates;
+  }
+
+  function resolveJsonToolingTransformModeLabel(settings: YankSettings): "Pretty Print" | "Markdown Table" {
+    return settings.jsonTooling.tableFromArrayEnabled ? "Markdown Table" : "Pretty Print";
+  }
+
+  function toJsonToolingInputSourceLabel(source: JsonToolingInputSource): string {
+    if (source === "code-block") return "nearby code block";
+    if (source === "clipboard") return "clipboard";
+    return "selection";
   }
 
   async function runCleanCodeBlockCopy(): Promise<void> {
@@ -642,48 +673,6 @@ export function initApp(): void {
     const lineCount = Math.max(1, candidate.text.split("\n").length);
     const plural = lineCount === 1 ? "line" : "lines";
     showToast(copied ? `Copied clean code (${lineCount} ${plural})` : "Clipboard write failed", {
-      kind: copied ? "success" : "error",
-    });
-  }
-
-  async function runHttpTransformCopy(target: HttpTransformTarget): Promise<void> {
-    const inlineCandidate = detectHttpTransformCandidate();
-    let candidate = inlineCandidate;
-
-    if (!candidate) {
-      const clipboardSource = cleanCopiedCode(await readClipboardText());
-      if (clipboardSource.trim()) {
-        candidate = {
-          text: clipboardSource,
-          rects: [],
-          source: "clipboard",
-        };
-      }
-    }
-
-    if (!candidate) {
-      showToast("No request text found in selection/code/clipboard.", { kind: "warning" });
-      return;
-    }
-
-    const requestShape = parseHttpRequestShape(candidate.text);
-    if (!requestShape) {
-      showToast("Could not parse an HTTP request.", { kind: "warning" });
-      return;
-    }
-
-    const output = target === "fetch"
-      ? renderHttpRequestAsFetch(requestShape)
-      : renderHttpRequestAsCurl(requestShape);
-
-    const copied = await writeClipboardText(output);
-    if (copied && candidate.source !== "clipboard" && candidate.rects.length > 0) {
-      flashCodeCopyOverlay(candidate.rects);
-    }
-
-    const targetLabel = target === "fetch" ? "Fetch" : "cURL";
-    const requestSummary = shorten(`${requestShape.method} ${requestShape.url}`, 78);
-    showToast(copied ? `Copied as ${targetLabel} (${requestSummary})` : "Clipboard write failed", {
       kind: copied ? "success" : "error",
     });
   }
@@ -746,56 +735,75 @@ export function initApp(): void {
     return null;
   }
 
+  function buildJsonToolingParseFailureMessage(
+    modeLabel: "Pretty Print" | "Markdown Table",
+    source: JsonToolingInputSource,
+    parseError: {
+      message: string;
+      line: number | null;
+      column: number | null;
+      hint: string | null;
+    },
+  ): string {
+    const sourceLabel = toJsonToolingInputSourceLabel(source);
+    const location = parseError.line != null && parseError.column != null
+      ? ` (line ${parseError.line}, col ${parseError.column})`
+      : "";
+    const details = parseError.message ? ` ${parseError.message}` : "";
+    const hint = parseError.hint ? ` ${parseError.hint}` : "";
+    return `JSON Tools ${modeLabel}: invalid JSON${location} from ${sourceLabel}.${details}${hint}`;
+  }
+
   function maybeTransformCopyEvent(event: ClipboardEvent): void {
     const settings = currentSettings();
     if (!isJsonToolingTransformEnabled(settings)) return;
 
-    const selected = getSelectedText().trim();
-    if (!selected) {
-      if (settings.jsonTooling.prettyPrintEnabled) {
-        showJsonToolingWarning("JSON Tools Pretty Print: no selected text to transform.");
-      } else if (settings.jsonTooling.tableFromArrayEnabled) {
-        showJsonToolingWarning("JSON Tools Markdown Table: no selected text to transform.");
-      } else {
-        showJsonToolingWarning("JSON Tools: no selected text to transform.");
-      }
-      return;
-    }
-
-    const parsed = parsePotentialJson(selected);
-    if (parsed == null) {
-      if (settings.jsonTooling.prettyPrintEnabled) {
-        showJsonToolingWarning("JSON Tools Pretty Print: copied text is not valid JSON.");
-      } else if (settings.jsonTooling.tableFromArrayEnabled) {
-        showJsonToolingWarning("JSON Tools Markdown Table: copied text is not valid JSON.");
-      } else {
-        showJsonToolingWarning("JSON Tools: copied text is not valid JSON.");
-      }
-      return;
-    }
-
-    const transformed = transformJsonForJsonTooling(parsed);
-    if (transformed == null) {
-      if (settings.jsonTooling.tableFromArrayEnabled) {
-        showJsonToolingWarning("JSON Tools Markdown Table requires a JSON array of objects.");
-      } else {
-        showJsonToolingWarning("JSON Tools Pretty Print could not transform copied JSON.");
-      }
-      return;
-    }
-
-    if (!event.clipboardData) {
-      void writeClipboardText(transformed).then((ok) => {
-        showToast(ok ? "JSON Tools transformed copied JSON" : "JSON Tools could not write transformed JSON.", {
-          kind: ok ? "success" : "error",
-        });
-      });
-      return;
-    }
-
     event.preventDefault();
-    event.clipboardData.setData("text/plain", transformed);
-    showToast("JSON Tools transformed copied JSON");
+
+    void (async () => {
+      const latestSettings = currentSettings();
+      const modeLabel = resolveJsonToolingTransformModeLabel(latestSettings);
+      const inputCandidates = await resolveJsonToolingInputCandidates();
+
+      if (inputCandidates.length === 0) {
+        showJsonToolingWarning(`JSON Tools ${modeLabel}: no JSON input found (selection -> nearby code block -> clipboard).`);
+        return;
+      }
+
+      let firstFailureMessage: string | null = null;
+      for (const inputCandidate of inputCandidates) {
+        const parsed = parsePotentialJsonWithRecovery(inputCandidate.text);
+        if (!parsed.ok) {
+          if (!firstFailureMessage) {
+            firstFailureMessage = buildJsonToolingParseFailureMessage(modeLabel, inputCandidate.source, parsed.error);
+          }
+          continue;
+        }
+
+        const transformed = transformJsonForJsonTooling(parsed.value);
+        if (transformed == null) {
+          if (!firstFailureMessage) {
+            firstFailureMessage = "JSON Tools Markdown Table: expected a JSON array of objects.";
+          }
+          continue;
+        }
+
+        const copied = await writeClipboardText(transformed);
+        if (!copied) {
+          showToast(`JSON Tools ${modeLabel}: clipboard write failed.`, { kind: "error" });
+          return;
+        }
+
+        showToast(`JSON Tools ${modeLabel}: copied from ${toJsonToolingInputSourceLabel(inputCandidate.source)}.`);
+        return;
+      }
+
+      if (firstFailureMessage) {
+        showJsonToolingWarning(firstFailureMessage);
+      } else {
+        showJsonToolingWarning(`JSON Tools ${modeLabel}: no valid JSON input found.`);
+      }
+    })();
   }
 
   function decorateJsonBlocksForPathCopy(): number {
@@ -965,20 +973,6 @@ export function initApp(): void {
       event.preventDefault();
       event.stopPropagation();
       await runCleanCodeBlockCopy();
-      return;
-    }
-
-    if (doesKeyboardEventMatchShortcut(event, shortcuts.copyAsFetch)) {
-      event.preventDefault();
-      event.stopPropagation();
-      await runHttpTransformCopy("fetch");
-      return;
-    }
-
-    if (doesKeyboardEventMatchShortcut(event, shortcuts.copyAsCurl)) {
-      event.preventDefault();
-      event.stopPropagation();
-      await runHttpTransformCopy("curl");
       return;
     }
 

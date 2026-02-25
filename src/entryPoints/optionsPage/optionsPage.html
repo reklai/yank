@@ -27,14 +27,6 @@
           <label>Clean code block copy</label>
           <div>Copy clean code from selection/focus/hover/nearby code block</div>
         </div>
-        <div class="field-row">
-          <label>Copy as Fetch</label>
-          <div>Copy detected request as Fetch (selection -> code block -> clipboard)</div>
-        </div>
-        <div class="field-row">
-          <label>Copy as cURL</label>
-          <div>Copy detected request as cURL (selection -> code block -> clipboard)</div>
-        </div>
         <div class="field-row check-row">
           <label><input type="checkbox" id="urlShowToast" /> Show copy confirmation toast</label>
         </div>
@@ -97,7 +89,7 @@
 
       <div class="section">
         <h2>Shortcuts</h2>
-        <div class="shortcut-help">Capture a key combo or type it manually (example: Alt+J). Leave empty to disable. <code>Alt+M</code> is reserved for Help Menu.</div>
+        <div class="shortcut-help">Capture a key combo or type it manually (example: Alt+K). Leave empty to disable. <code>Alt+M</code> is reserved for Help Menu.</div>
 
         <div class="field-row">
           <label for="shortcutSwitchToAutoCopy">Toggle Auto-Copy on/off</label>
@@ -150,24 +142,6 @@
             <input id="shortcutCopyCleanCodeBlock" type="text" spellcheck="false" />
             <button type="button" class="shortcut-btn capture-btn" data-shortcut-id="shortcutCopyCleanCodeBlock">Capture</button>
             <button type="button" class="shortcut-btn clear-btn" data-shortcut-id="shortcutCopyCleanCodeBlock">Clear</button>
-          </div>
-        </div>
-
-        <div class="field-row">
-          <label for="shortcutCopyAsFetch">Copy as Fetch</label>
-          <div class="shortcut-input-wrap">
-            <input id="shortcutCopyAsFetch" type="text" spellcheck="false" />
-            <button type="button" class="shortcut-btn capture-btn" data-shortcut-id="shortcutCopyAsFetch">Capture</button>
-            <button type="button" class="shortcut-btn clear-btn" data-shortcut-id="shortcutCopyAsFetch">Clear</button>
-          </div>
-        </div>
-
-        <div class="field-row">
-          <label for="shortcutCopyAsCurl">Copy as cURL</label>
-          <div class="shortcut-input-wrap">
-            <input id="shortcutCopyAsCurl" type="text" spellcheck="false" />
-            <button type="button" class="shortcut-btn capture-btn" data-shortcut-id="shortcutCopyAsCurl">Capture</button>
-            <button type="button" class="shortcut-btn clear-btn" data-shortcut-id="shortcutCopyAsCurl">Clear</button>
           </div>
         </div>
       </div>
