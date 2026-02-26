@@ -1,4 +1,4 @@
-# Yank
+# Yank OPENCODE DRIVEN APPLICATION USING HARPOON_TELESCOPE AS BASE REFERENCE
 
 Yank is a keyboard-first clipboard extension for browser-based developer workflows.
 
