@@ -4,7 +4,7 @@ Yank is a keyboard-first clipboard extension for browser-based developer workflo
 
 It focuses on one thing: making copy actions fast and predictable on any page.
 
-## Disclaimer: OPENCODE DRIVEN APPLICATION USING HARPOON_TELESCOPE AS BASE REFERENCE
+## Disclaimer: Opencode driven application USING HARPOON_TELESCOPE AS BASE REFERENCE
 
 ## What Yank Does
 
